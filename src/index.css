@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sniglet: "Sniglet", system-ui, sans-serif;
+  --color-toy-bg: #E0F2FE;
+  --color-toy-yellow: #FFD93D;
+  --color-toy-green: #4ADE80;
+  --color-toy-pink: #FF6B6B;
+  --color-toy-blue: #3B82F6;
+  --color-toy-purple: #8B5CF6;
+  --color-toy-orange: #F97316;
+  --color-toy-ink: #1E293B;
+}
+
+body {
+  font-family: var(--font-sniglet);
+  background-color: var(--color-toy-bg);
+  background: radial-gradient(circle at 50% 50%, #E0F2FE 0%, #BAE6FD 100%);
+  color: var(--color-toy-ink);
+  @apply overflow-hidden select-none;
+}
+
+/* 3D Toy Plastic Patterns */
+.toy-card, .bento-card {
+  @apply bg-white border-[3px] border-[--color-toy-ink] rounded-[32px] sm:rounded-[48px];
+  box-shadow: 
+    0 10px 0 0 rgba(30, 41, 59, 0.9),  /* Thick bottom shadow */
+    0 15px 30px rgba(0, 0, 0, 0.1);    /* Soft drop shadow */
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toy-card:active, .bento-card:active {
+  transform: translateY(6px);
+  box-shadow: 
+    0 4px 0 0 rgba(30, 41, 59, 0.9),
+    0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Vibrant Toy Gradients (Inspired by Motu Patlu palettes) */
+.toy-yellow-gradient { background: linear-gradient(180deg, #FFD93D 0%, #FBBF24 100%); }
+.toy-blue-gradient { background: linear-gradient(180deg, #60A5FA 0%, #3B82F6 100%); }
+.toy-pink-gradient { background: linear-gradient(180deg, #FB7185 0%, #FF6B6B 100%); }
+.toy-orange-gradient { background: linear-gradient(180deg, #FB923C 0%, #F97316 100%); }
+.toy-purple-gradient { background: linear-gradient(180deg, #A78BFA 0%, #8B5CF6 100%); }
+.toy-green-gradient { background: linear-gradient(180deg, #4ADE80 0%, #22C55E 100%); }
+
+.cloud {
+  @apply absolute opacity-40 pointer-events-none;
+  filter: drop-shadow(0 4px 0 rgba(0,0,0,0.05));
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-30px) translateX(15px); }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 14s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.sticker-pop {
+  animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop {
+  0% { transform: scale(0) rotate(-20deg); }
+  70% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
