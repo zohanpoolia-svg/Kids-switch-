@@ -31,7 +31,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // --- Types & Constants ---
 
-type Mode = 'menu' | 'board' | 'follow-me' | 'puzzle' | 'dark-room' | 'music-dj' | 'stickers' | 'abc';
+type Mode = 'menu' | 'board' | 'follow-me' | 'puzzle' | 'dark-room' | 'music-dj' | 'stickers' | 'abc' | 'animals';
 
 interface Device {
   id: string;
@@ -63,7 +63,7 @@ const COLORS = {
 // Persistent Audio Context to prevent "Music not working" in many browsers
 let globalAudioCtx: AudioContext | null = null;
 
-const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'abc', value?: string | number) => {
+const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'abc' | 'animal', value?: string | number) => {
   if (!globalAudioCtx) {
     globalAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
@@ -145,6 +145,94 @@ const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'ab
     const utterance = new SpeechSynthesisUtterance(value as string);
     utterance.pitch = 1.8;
     utterance.rate = 1.2;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  if (type === 'animal') {
+    const animalSounds: Record<string, () => void> = {
+      'lion': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.4, 0.8);
+         osc.type = 'sawtooth';
+         osc.frequency.setValueAtTime(100, now);
+         osc.frequency.exponentialRampToValueAtTime(50, now + 0.8);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.8);
+      },
+      'cat': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.2, 0.4);
+         osc.type = 'sine';
+         osc.frequency.setValueAtTime(600, now);
+         osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+         osc.frequency.exponentialRampToValueAtTime(600, now + 0.4);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.4);
+      },
+      'dog': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.3, 0.2);
+         osc.type = 'square';
+         osc.frequency.setValueAtTime(150, now);
+         osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.2);
+      },
+      'cow': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.3, 1.0);
+         osc.type = 'triangle';
+         osc.frequency.setValueAtTime(120, now);
+         osc.frequency.linearRampToValueAtTime(100, now + 1.0);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 1.0);
+      },
+      'duck': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.2, 0.2);
+         osc.type = 'sawtooth';
+         osc.frequency.setValueAtTime(400, now);
+         osc.frequency.linearRampToValueAtTime(300, now + 0.2);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.2);
+      },
+      'elephant': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.3, 0.6);
+         osc.type = 'sawtooth';
+         osc.frequency.setValueAtTime(400, now);
+         osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+         osc.frequency.exponentialRampToValueAtTime(400, now + 0.6);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.6);
+      },
+      'sheep': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.2, 0.5);
+         osc.type = 'sawtooth';
+         osc.frequency.setValueAtTime(200, now);
+         osc.frequency.linearRampToValueAtTime(250, now + 0.5);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.5);
+      },
+      'monkey': () => {
+         const osc = ctx.createOscillator();
+         const gain = createGain(0.3, 0.2);
+         osc.type = 'sine';
+         osc.frequency.setValueAtTime(800, now);
+         osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+         osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+         osc.connect(gain).connect(ctx.destination);
+         osc.start(); osc.stop(now + 0.2);
+      }
+    };
+    
+    if (animalSounds[value as string]) {
+      animalSounds[value as string]();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(value as string);
+    utterance.pitch = 1.5;
     window.speechSynthesis.speak(utterance);
   }
 };
@@ -305,6 +393,7 @@ const Menu = ({ setMode, stickerCount }: { setMode: (m: Mode) => void, stickerCo
     { mode: 'board' as Mode, label: 'Free Play', icon: Lightbulb, color: 'toy-yellow-gradient', desc: 'Touch!', span: 'sm:col-span-2' },
     { mode: 'follow-me' as Mode, label: 'Game Mode', icon: Gamepad2, color: 'toy-blue-gradient', desc: 'Play!', span: 'sm:row-span-2' },
     { mode: 'abc' as Mode, label: 'ABC Fun', icon: Bot, color: 'toy-green-gradient', desc: 'Learn ABC!', span: 'sm:col-span-1' },
+    { mode: 'animals' as Mode, label: 'Animal Safari', icon: Sparkles, color: 'toy-purple-gradient', desc: 'Zoo Park!', span: 'sm:col-span-1' },
     { mode: 'music-dj' as Mode, label: 'Music DJ', icon: Music, color: 'toy-pink-gradient', desc: 'DJ!', span: 'sm:col-span-1' },
     { mode: 'puzzle' as Mode, label: 'Solve All', icon: Sparkles, color: 'toy-orange-gradient', desc: 'Fun!', span: 'sm:col-span-1' },
     { mode: 'dark-room' as Mode, label: 'Bedtime', icon: Moon, color: 'toy-green-gradient', desc: 'Lights!', span: 'sm:col-span-2' },
@@ -700,6 +789,62 @@ const ABCMode = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+const AnimalMode = ({ onBack }: { onBack: () => void }) => {
+  const animals = [
+    { id: 'lion', name: 'Lion', emoji: '🦁', color: 'toy-orange-gradient' },
+    { id: 'cat', name: 'Cat', emoji: '🐱', color: 'toy-pink-gradient' },
+    { id: 'dog', name: 'Dog', emoji: '🐶', color: 'toy-blue-gradient' },
+    { id: 'cow', name: 'Cow', emoji: '🐮', color: 'toy-yellow-gradient' },
+    { id: 'duck', name: 'Duck', emoji: '🦆', color: 'toy-green-gradient' },
+    { id: 'elephant', name: 'Elephant', emoji: '🐘', color: 'toy-purple-gradient' },
+    { id: 'sheep', name: 'Sheep', emoji: '🐑', color: 'toy-blue-gradient' },
+    { id: 'monkey', name: 'Monkey', emoji: '🐒', color: 'toy-orange-gradient' },
+  ];
+  const [activeAnimal, setActiveAnimal] = useState<string | null>(null);
+
+  return (
+    <div className="flex flex-col items-center w-full h-full pb-32 overflow-y-auto relative z-10">
+      <Header title="Animal Safari" onBack={onBack} />
+      
+      <div className="flex flex-col items-center gap-6 sm:gap-10 px-4 w-full max-w-6xl">
+        <motion.div 
+          key={activeAnimal}
+          initial={{ scale: 0.5, y: 50, rotate: -20 }}
+          animate={{ scale: 1, y: 0, rotate: 0 }}
+          className="toy-card bg-white w-48 h-48 sm:w-80 sm:h-80 flex items-center justify-center text-[100px] sm:text-[200px] font-black shadow-2xl relative"
+        >
+          {activeAnimal ? animals.find(a => a.id === activeAnimal)?.emoji : "🦁"}
+          <motion.div 
+             animate={{ scale: [1, 1.2, 1] }} 
+             transition={{ repeat: Infinity, duration: 2 }}
+             className="absolute -top-4 -right-4 bg-yellow-400 text-white p-3 rounded-full toy-card text-xl sm:text-3xl"
+          >
+            🐾
+          </motion.div>
+        </motion.div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 w-full pb-10">
+          {animals.map((animal) => (
+            <motion.button
+              key={animal.id}
+              whileHover={{ scale: 1.05, rotate: 2 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                setActiveAnimal(animal.id);
+                playSound('animal', animal.id);
+              }}
+              className={`toy-card ${animal.color} p-4 sm:p-8 flex flex-col items-center justify-center gap-2 sm:gap-4 shadow-xl`}
+            >
+              <span className="text-5xl sm:text-8xl">{animal.emoji}</span>
+              <span className="text-white font-black uppercase text-sm sm:text-2xl tracking-widest">{animal.name}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -756,6 +901,7 @@ export default function App() {
           {mode === 'dark-room' && <DarkRoom onBack={() => setMode('menu')} />}
           {mode === 'music-dj' && <MusicDJ onBack={() => setMode('menu')} />}
           {mode === 'abc' && <ABCMode onBack={() => setMode('menu')} />}
+          {mode === 'animals' && <AnimalMode onBack={() => setMode('menu')} />}
           {mode === 'stickers' && <StickerBook stickers={stickers} onBack={() => setMode('menu')} />}
         </motion.div>
       </AnimatePresence>
@@ -788,7 +934,7 @@ export default function App() {
           className="fixed bottom-4 sm:bottom-10 left-4 right-4 flex pointer-events-none z-50 overflow-x-auto"
         >
           <div className="flex gap-3 sm:gap-6 mx-auto pointer-events-auto p-2 sm:p-4 bg-white/60 backdrop-blur-xl rounded-[2.5rem] toy-card">
-            {['board', 'follow-me', 'abc', 'music-dj', 'puzzle', 'dark-room'].map((m) => (
+            {['board', 'follow-me', 'abc', 'animals', 'music-dj', 'puzzle', 'dark-room'].map((m) => (
               <button
                 key={m}
                 onClick={() => {
@@ -797,7 +943,7 @@ export default function App() {
                 }}
                 className={`!rounded-[1.5rem] sm:!rounded-[2rem] px-4 sm:px-8 py-3 sm:py-5 font-black uppercase text-[12px] sm:text-lg tracking-wide transition-all shadow-md ${mode === m ? 'toy-pink-gradient text-white scale-110 shadow-xl' : 'bg-white text-[--color-toy-ink] hover:bg-slate-50'}`}
               >
-                {m === 'dark-room' ? 'DARK' : (m === 'music-dj' ? 'DJ' : (m === 'abc' ? 'ABC' : m.split('-')[0]))}
+                {m === 'dark-room' ? 'DARK' : (m === 'music-dj' ? 'DJ' : (m === 'abc' ? 'ABC' : (m === 'animals' ? 'ZOO' : m.split('-')[0])))}
               </button>
             ))}
             <button
