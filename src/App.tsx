@@ -31,7 +31,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // --- Types & Constants ---
 
-type Mode = 'menu' | 'board' | 'follow-me' | 'puzzle' | 'dark-room' | 'music-dj' | 'stickers' | 'abc' | 'animals';
+type Mode = 'menu' | 'board' | 'follow-me' | 'puzzle' | 'dark-room' | 'music-dj' | 'stickers' | 'abc' | 'animals' | 'piano';
 
 interface Device {
   id: string;
@@ -63,7 +63,7 @@ const COLORS = {
 // Persistent Audio Context to prevent "Music not working" in many browsers
 let globalAudioCtx: AudioContext | null = null;
 
-const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'abc' | 'animal', value?: string | number) => {
+const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'abc' | 'animal' | 'piano', value?: string | number) => {
   if (!globalAudioCtx) {
     globalAudioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
@@ -235,6 +235,17 @@ const playSound = (type: 'toggle' | 'success' | 'click' | 'wrong' | 'note' | 'ab
     utterance.pitch = 1.5;
     window.speechSynthesis.speak(utterance);
   }
+
+  if (type === 'piano') {
+     const freq = value as number;
+     const osc = ctx.createOscillator();
+     const gain = createGain(0.2, 0.5);
+     osc.type = 'triangle'; // Softer, more piano-like than square
+     osc.frequency.setValueAtTime(freq, now);
+     osc.connect(gain).connect(ctx.destination);
+     osc.start();
+     osc.stop(now + 0.5);
+  }
 };
 
 // --- Gemini AI Hook ---
@@ -394,6 +405,7 @@ const Menu = ({ setMode, stickerCount }: { setMode: (m: Mode) => void, stickerCo
     { mode: 'follow-me' as Mode, label: 'Game Mode', icon: Gamepad2, color: 'toy-blue-gradient', desc: 'Play!', span: 'sm:row-span-2' },
     { mode: 'abc' as Mode, label: 'ABC Fun', icon: Bot, color: 'toy-green-gradient', desc: 'Learn ABC!', span: 'sm:col-span-1' },
     { mode: 'animals' as Mode, label: 'Animal Safari', icon: Sparkles, color: 'toy-purple-gradient', desc: 'Zoo Park!', span: 'sm:col-span-1' },
+    { mode: 'piano' as Mode, label: 'Pro Piano', icon: Music, color: 'bg-slate-800', desc: 'Masters!', span: 'sm:col-span-1' },
     { mode: 'music-dj' as Mode, label: 'Music DJ', icon: Music, color: 'toy-pink-gradient', desc: 'DJ!', span: 'sm:col-span-1' },
     { mode: 'puzzle' as Mode, label: 'Solve All', icon: Sparkles, color: 'toy-orange-gradient', desc: 'Fun!', span: 'sm:col-span-1' },
     { mode: 'dark-room' as Mode, label: 'Bedtime', icon: Moon, color: 'toy-green-gradient', desc: 'Lights!', span: 'sm:col-span-2' },
@@ -845,6 +857,66 @@ const AnimalMode = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+const PianoMode = ({ onBack }: { onBack: () => void }) => {
+  const keys = [
+    { note: 'C', freq: 261.63, type: 'white' },
+    { note: 'C#', freq: 277.18, type: 'black' },
+    { note: 'D', freq: 293.66, type: 'white' },
+    { note: 'D#', freq: 311.13, type: 'black' },
+    { note: 'E', freq: 329.63, type: 'white' },
+    { note: 'F', freq: 349.23, type: 'white' },
+    { note: 'F#', freq: 369.99, type: 'black' },
+    { note: 'G', freq: 392.00, type: 'white' },
+    { note: 'G#', freq: 415.30, type: 'black' },
+    { note: 'A', freq: 440.00, type: 'white' },
+    { note: 'A#', freq: 466.16, type: 'black' },
+    { note: 'B', freq: 493.88, type: 'white' },
+    { note: 'C2', freq: 523.25, type: 'white' },
+  ];
+
+  return (
+    <div className="flex flex-col items-center w-full h-full pb-32 overflow-y-auto relative z-10">
+      <Header title="Pro Piano" onBack={onBack} />
+      
+      <div className="flex flex-col items-center gap-10 px-4 w-full max-w-5xl mt-10">
+        <div className="bg-slate-900 p-4 sm:p-8 rounded-[3rem] shadow-2xl border-x-[10px] border-slate-700 w-full relative h-[400px] sm:h-[500px] flex items-end">
+          <div className="flex w-full h-full relative">
+            {keys.map((key, i) => (
+              key.type === 'white' ? (
+                <motion.button
+                  key={i}
+                  whileTap={{ y: 5 }}
+                  onClick={() => playSound('piano', key.freq)}
+                  className="flex-1 bg-white border-2 border-slate-200 rounded-b-xl hover:bg-slate-50 transition-colors shadow-[0_8px_0_#e2e8f0] active:shadow-none h-full z-10"
+                >
+                   <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] sm:text-lg font-black text-slate-400 uppercase">{key.note}</span>
+                </motion.button>
+              ) : (
+                <motion.button
+                  key={i}
+                  whileTap={{ y: 5 }}
+                  onClick={() => playSound('piano', key.freq)}
+                  style={{ left: `${(i / (keys.length - 1)) * 100 - 3}%` }}
+                  className="absolute top-0 w-[6%] h-[60%] bg-slate-800 rounded-b-lg z-20 shadow-[0_5px_0_#000] hover:bg-slate-700 transition-colors"
+                />
+              )
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-4 text-center text-slate-400">
+           <Music className="w-12 h-12 animate-bounce" />
+           <p className="font-black uppercase tracking-widest text-lg sm:text-2xl">Master the Keys</p>
+           <div className="flex gap-4">
+              <span className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold uppercase">Polyphonic Support</span>
+              <span className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold uppercase">Low Latency</span>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -902,6 +974,7 @@ export default function App() {
           {mode === 'music-dj' && <MusicDJ onBack={() => setMode('menu')} />}
           {mode === 'abc' && <ABCMode onBack={() => setMode('menu')} />}
           {mode === 'animals' && <AnimalMode onBack={() => setMode('menu')} />}
+          {mode === 'piano' && <PianoMode onBack={() => setMode('menu')} />}
           {mode === 'stickers' && <StickerBook stickers={stickers} onBack={() => setMode('menu')} />}
         </motion.div>
       </AnimatePresence>
@@ -934,7 +1007,7 @@ export default function App() {
           className="fixed bottom-4 sm:bottom-10 left-4 right-4 flex pointer-events-none z-50 overflow-x-auto"
         >
           <div className="flex gap-3 sm:gap-6 mx-auto pointer-events-auto p-2 sm:p-4 bg-white/60 backdrop-blur-xl rounded-[2.5rem] toy-card">
-            {['board', 'follow-me', 'abc', 'animals', 'music-dj', 'puzzle', 'dark-room'].map((m) => (
+            {['board', 'follow-me', 'abc', 'animals', 'piano', 'music-dj', 'puzzle', 'dark-room'].map((m) => (
               <button
                 key={m}
                 onClick={() => {
@@ -943,7 +1016,7 @@ export default function App() {
                 }}
                 className={`!rounded-[1.5rem] sm:!rounded-[2rem] px-4 sm:px-8 py-3 sm:py-5 font-black uppercase text-[12px] sm:text-lg tracking-wide transition-all shadow-md ${mode === m ? 'toy-pink-gradient text-white scale-110 shadow-xl' : 'bg-white text-[--color-toy-ink] hover:bg-slate-50'}`}
               >
-                {m === 'dark-room' ? 'DARK' : (m === 'music-dj' ? 'DJ' : (m === 'abc' ? 'ABC' : (m === 'animals' ? 'ZOO' : m.split('-')[0])))}
+                {m === 'dark-room' ? 'DARK' : (m === 'music-dj' ? 'DJ' : (m === 'abc' ? 'ABC' : (m === 'animals' ? 'ZOO' : (m === 'piano' ? 'PRO' : m.split('-')[0]))))}
               </button>
             ))}
             <button
